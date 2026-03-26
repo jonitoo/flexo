@@ -1,0 +1,18 @@
+server:
+  port: 8080
+
+spring:
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+  application:
+    name: flexo
+  mongodb:
+    uri: mongodb://localhost:17017/flexo
+  networks:
+    - flexo_network
+
+networks:
+  flexo_network:
+    driver: bridge

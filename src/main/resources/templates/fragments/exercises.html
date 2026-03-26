@@ -1,0 +1,84 @@
+<th:block th:fragment="exercises(exercises)">
+    <th:block th:each="exercise : ${exercises}">
+        <tr th:replace="~{:: exercise-row(exercise=${exercise})}"></tr>
+    </th:block>
+</th:block>
+
+<tr th:fragment="exercise-row(exercise)" th:id="'id_' + ${exercise.id}">
+    <td>
+        <span class="handle">☰</span>
+        <input type="hidden" name="idx" th:value="${exercise.id}"/>
+    </td>
+    <td class="exercise-name" th:text="${exercise.name}"></td>
+    <td th:utext="${exercise.description}"></td>
+    <td>
+        <img
+                th:if="${exercise.image != null}"
+                th:src="@{'/exercise/' + ${exercise.id} + '/image'}"
+                alt="Exercise image"
+                class="img-fluid rounded"
+                style="max-height: 140px; object-fit: cover;"
+        />
+    </td>
+    <td>
+        <div class="d-flex flex-column flex-lg-row gap-2">
+            <button
+                    class="btn btn-danger"
+                    th:hx-delete="'/delete?id=' + ${exercise.id}"
+                    th:hx-target="'#id_' + ${exercise.id}"
+            >
+                Delete
+            </button>
+            <button
+                    class="btn btn-secondary"
+                    data-bs-toggle="modal"
+                    data-bs-target="#uploadImageModal"
+                    th:hx-get="@{'/exercise/' + ${exercise.id} + '/image/upload-form'}"
+                    hx-target="#upload-image-dialog-body"
+                    hx-trigger="click"
+            >
+                Upload image
+            </button>
+            <button
+                    class="btn btn-primary"
+                    data-bs-toggle="modal"
+                    data-bs-target="#editModal"
+                    th:hx-get="'/edit/' + ${exercise.id}"
+                    hx-target="#edit-dialog-body"
+                    hx-swap="innerHTML"
+                    hx-trigger="click"
+            >
+                Edit
+            </button>
+            <div th:replace="~{fragments/timer :: timer(exerciseId=${exercise.id}, duration=${exercise.timerDurationSeconds})}"></div>
+        </div>
+    </td>
+</tr>
+
+<div th:fragment="edit-exercise-modal-content(exercise)">
+    <form
+            hx-post="/edit"
+            th:hx-target="'#id_' + ${exercise.id}"
+            hx-swap="outerHTML"
+            th:object="${exercise}"
+    >
+        <input type="hidden" th:field="*{id}" />
+        <div class="mb-3">
+            <label for="name" class="form-label">Name</label>
+            <input type="text" class="form-control" id="name" th:field="*{name}" />
+        </div>
+        <div class="mb-3">
+            <label for="description" class="form-label">Description</label>
+            <textarea class="form-control" id="description" rows="3" th:field="*{description}"></textarea>
+        </div>
+        <div class="mb-3">
+            <label for="timerDurationSeconds" class="form-label">Timer Duration (seconds)</label>
+            <input type="number" class="form-control" id="timerDurationSeconds" th:field="*{timerDurationSeconds}" />
+        </div>
+        <button type="submit" class="btn btn-primary" data-bs-dismiss="modal">Save changes</button>
+    </form>
+</div>
+
+<tbody th:fragment="exercise-table-body(exercises)">
+    <tr th:each="exercise : ${exercises}" th:replace="~{:: exercise-row(exercise=${exercise})}"></tr>
+</tbody>

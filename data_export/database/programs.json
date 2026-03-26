@@ -1,0 +1,16 @@
+[
+  {
+    "_id": {"$oid": "69538c3adc59acbd3d45d57e"},
+    "_class": "com.example.flexo.program.Program",
+    "description": "\"Panik-Modus\" durch Stauchung der Wirbelsäule versteift die Muskulatur, um die Wirbelsäule zu schützen.\nDadurch wird die natürliche Lordose (Krümmung der Lendenwirbelsäule nach innen) abgeflacht.\nDiese Abflachung ist also eine Schutzreaktion Ihres Körpers.\nMit der Zeit, wenn die Schmerzen nachlassen und die Muskulatur sich entspannt, stellt sich die natürliche Lordose meist wieder ein.\nUm die Rückkehr der Lordose zu unterstützen, können gezielte Übungen zur Stärkung der Rückenmuskulatur und zur Verbesserung der Haltung hilfreich sein.\nEs ist wichtig, geduldig zu sein und dem Körper Zeit zu geben, sich zu erholen.",
+    "exerciseIds": "[]",
+    "name": "Wirbelsäule Fraktur (2-3 Monate)"
+  },
+  {
+    "_id": {"$oid": "6953954949e5f3da6183e880"},
+    "_class": "com.example.flexo.program.Program",
+    "description": "test",
+    "exerciseIds": "[]",
+    "name": "test"
+  }
+]

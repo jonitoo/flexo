@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- Include the head fragment by Thymeleaf -->
+<head th:replace="~{fragments/head ::head}"></head>
+<body>
+<div class="container">
+    <div>
+        <h1 class="mb-4 mt-4">Flexo</h1>
+        <div class="d-flex justify-content-between">
+            <button
+                    class="btn btn-primary"
+                    data-bs-toggle="modal"
+                    data-bs-target="#createProgramModal"
+            >
+                Add Program
+            </button>
+        </div>
+        <br>
+        <form action="/programs/select" method="post" onchange="this.submit()">
+            <div class="list-group mb-4">
+                <label th:each="program : ${programs}"
+                       class="list-group-item list-group-item-action d-flex flex-column flex-md-row justify-content-between align-items-md-start">
+                    <div class="flex-grow-1 w-100 mb-2 mb-md-0">
+                        <input type="radio" name="programId" th:value="${program.id}"
+                               th:checked="${program.id.toString() == selectedProgramId}"
+                               onchange="this.form.submit()"/>
+                        <span class="ms-2 fw-bold" th:text="${program.name}">Program Name</span>
+                        -
+                        <span class="text-muted" th:text="${program.description}">Program description.</span>
+                    </div>
+                    <div class="d-flex align-items-start gap-2 ms-md-3">
+                        <button class="btn btn-sm btn-danger"
+                                th:hx-delete="'/programs/' + ${program.id}"
+                                hx-target="closest label"
+                                hx-swap="outerHTML"
+                                hx-confirm="Are you sure you want to delete this program?">
+                            Delete
+                        </button>
+                        <button class="btn btn-sm btn-secondary"
+                                data-bs-toggle="modal"
+                                data-bs-target="#editProgramModal"
+                                th:hx-get="'/programs/edit-form?id=' + ${program.id}"
+                                hx-target="#edit-program-dialog-body"
+                                hx-swap="innerHTML">
+                            Edit
+                        </button>
+                    </div>
+                </label>
+            </div>
+        </form>
+
+        <div class="d-flex flex-column flex-md-row justify-content-between">
+            <div class="d-flex gap-2 align-items-center mb-2 mb-md-0">
+                <button
+                        class="btn btn-success"
+                        onclick="playAllTimers()"
+                >
+                    Play All
+                </button>
+                <span id="total-duration" class="fs-5 fw-bold"></span>
+            </div>
+            <div class="ms-auto d-flex gap-2">
+                    <a th:href="@{/admin/export(selectedProgramId=${selectedProgramId})}" class="btn btn-info">Export</a>
+                    <button
+                            class="btn btn-warning"
+                            data-bs-toggle="modal"
+                            data-bs-target="#importModal"
+                    >
+                        Import
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-striped" style="table-layout: auto">
+                <thead>
+                <tr>
+                    <th style="width: 10px;"></th>
+                    <th style="width: 15%;">Name</th>
+                    <th style="width: 50%;">Description</th>
+                    <th>Image</th>
+                    <th>Action</th>
+                </tr>
+                </thead>
+                <tbody id="main_table" hx-post="/reorder" hx-trigger="end" hx-include="[name='idx']" hx-swap="innerHTML">
+                <th:block th:replace="~{fragments/exercises :: exercises(exercises=${exercises})}"></th:block>
+                </tbody>
+            </table>
+        </div>
+        <button
+                class="btn btn-primary"
+                data-bs-toggle="modal"
+                data-bs-target="#createModal"
+        >
+            Add New
+        </button>
+    </div>
+</div>
+<!-- Inlcude the modals -->
+<div th:replace="~{fragments/dialog :: createmodal}"></div>
+<div th:replace="~{fragments/dialog :: editmodal}"></div>
+<div th:replace="~{fragments/dialog :: uploadimagemodal}"></div>
+<div th:replace="~{fragments/dialog :: importmodal}"></div>
+<div th:replace="~{fragments/dialog :: createprogrammodal}"></div>
+<div th:replace="~{fragments/editprogrammodal :: editprogrammodal}"></div>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    var el = document.getElementById('main_table');
+    var sortable = Sortable.create(el, {
+        handle: '.handle',
+        animation: 150,
+    });
+
+    let timers = {};
+    let timerQueue = [];
+    let isPlayingAll = false;
+
+    function speak(text) {
+        if ('speechSynthesis' in window) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'de-CH';
+            window.speechSynthesis.speak(utterance);
+        }
+    }
+
+    function startTimer(exerciseId, duration, callback) {
+        // Ensure duration is always a number
+        duration = parseInt(duration, 10);
+        if (timers[exerciseId] && timers[exerciseId].interval) {
+            clearInterval(timers[exerciseId].interval);
+        }
+
+        const exerciseRow = document.getElementById('id_' + exerciseId);
+        exerciseRow.scrollIntoView({behavior: 'smooth', block: 'center'});
+
+        const exerciseName = exerciseRow.querySelector('.exercise-name').textContent;
+        const textToSpeak = `${exerciseName}, ${duration} sekunden`;
+        speak(textToSpeak);
+
+        let timer = duration;
+        let display = document.getElementById('timer-display-' + exerciseId);
+        let startButton = document.querySelector(`#timer-container-${exerciseId} button`);
+
+        timers[exerciseId] = {};
+        timers[exerciseId].interval = setInterval(function () {
+            let minutes = parseInt(timer / 60, 10);
+            let seconds = parseInt(timer % 60, 10);
+
+            minutes = minutes < 10 ? "0" + minutes : minutes;
+            seconds = seconds < 10 ? "0" + seconds : seconds;
+
+            display.textContent = minutes + ":" + seconds;
+            startButton.classList.add('btn-danger');
+            startButton.textContent = 'Stop';
+
+            if (timer <= 5 && timer > 0) {
+                speak(timer.toString());
+            }
+
+            if (--timer < 0) {
+                clearInterval(timers[exerciseId].interval);
+                if (isPlayingAll && typeof callback === 'function') {
+                    speak("3 sekunden pause");
+                    display.textContent = "Pause";
+                    setTimeout(function() {
+                        display.textContent = "Done!";
+                        callback();
+                    }, 3000);
+                } else {
+                    display.textContent = "Done!";
+                }
+                startButton.classList.remove('btn-danger');
+                startButton.textContent = 'Start';
+            }
+        }, 1000);
+
+        startButton.onclick = function () {
+            stopTimer(exerciseId);
+        };
+    }
+
+    function stopTimer(exerciseId) {
+        if (timers[exerciseId] && timers[exerciseId].interval) {
+            clearInterval(timers[exerciseId].interval);
+            let display = document.getElementById('timer-display-' + exerciseId);
+            let startButton = document.querySelector(`#timer-container-${exerciseId} button`);
+            let duration = startButton.getAttribute('data-duration');
+            let minutes = parseInt(duration / 60, 10);
+            let seconds = parseInt(duration % 60, 10);
+            minutes = minutes < 10 ? "0" + minutes : minutes;
+            seconds = seconds < 10 ? "0" + seconds : seconds;
+            display.textContent = minutes + ":" + seconds;
+
+            startButton.classList.remove('btn-danger');
+            startButton.textContent = 'Start';
+            startButton.onclick = function () {
+                startTimer(exerciseId, duration, isPlayingAll ? playNextTimer : null);
+            };
+            isPlayingAll = false; // Stop sequence if a timer is manually stopped
+        }
+    }
+
+    function skipTimer(exerciseId) {
+        // Stop current timer
+        if (timers[exerciseId] && timers[exerciseId].interval) {
+            clearInterval(timers[exerciseId].interval);
+        }
+        let display = document.getElementById('timer-display-' + exerciseId);
+        let startButton = document.querySelector(`#timer-container-${exerciseId} button.btn-success`);
+        startButton.classList.remove('btn-danger');
+        startButton.textContent = 'Start';
+        // If in sequence mode, immediately start next timer
+        if (isPlayingAll) {
+            playNextTimer();
+        }
+    }
+
+    function playAllTimers() {
+        timerQueue = [];
+        const timerElements = document.querySelectorAll('.timer-container');
+        timerElements.forEach(timerEl => {
+            const exerciseId = timerEl.id.replace('timer-container-', '');
+            const duration = timerEl.querySelector('button').getAttribute('data-duration');
+            timerQueue.push({exerciseId, duration});
+        });
+
+        isPlayingAll = true;
+        playNextTimer();
+    }
+
+    function playFromHere(startExerciseId) {
+        timerQueue = [];
+        const timerElements = Array.from(document.querySelectorAll('.timer-container'));
+        let startAdding = false;
+        timerElements.forEach(timerEl => {
+            const exerciseId = timerEl.id.replace('timer-container-', '');
+            const duration = timerEl.querySelector('button').getAttribute('data-duration');
+            if (exerciseId === startExerciseId) {
+                startAdding = true;
+            }
+            if (startAdding) {
+                timerQueue.push({exerciseId, duration});
+            }
+        });
+        isPlayingAll = true;
+        playNextTimer();
+    }
+
+    function playNextTimer() {
+        if (timerQueue.length > 0) {
+            const nextTimer = timerQueue.shift();
+            startTimer(nextTimer.exerciseId, nextTimer.duration, playNextTimer);
+        } else {
+            isPlayingAll = false;
+            speak("toll gemacht");
+        }
+    }
+
+    function calculateTotalDuration() {
+        let totalSeconds = 0;
+        const timerElements = document.querySelectorAll('.timer-container button');
+        timerElements.forEach(timerEl => {
+            const val = parseInt(timerEl.getAttribute('data-duration'), 10);
+            if (!isNaN(val) && val > 0) {
+                totalSeconds += val;
+            }
+        });
+
+        const exerciseCount = document.querySelectorAll('#main_table tr').length;
+        if (exerciseCount > 0) {
+            totalSeconds += exerciseCount * 3;
+        }
+
+        let minutes = 0;
+        let seconds = 0;
+        if (!isNaN(totalSeconds) && totalSeconds > 0) {
+            minutes = parseInt(totalSeconds / 60, 10);
+            seconds = parseInt(totalSeconds % 60, 10);
+        }
+
+        minutes = minutes < 10 ? "0" + minutes : minutes;
+        seconds = seconds < 10 ? "0" + seconds : seconds;
+
+        document.getElementById('total-duration').textContent = `Total: ${minutes}:${seconds}`;
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        calculateTotalDuration();
+        const timerElements = document.querySelectorAll('.timer-container');
+        timerElements.forEach(timerEl => {
+            const exerciseId = timerEl.id.replace('timer-container-', '');
+            const startButton = timerEl.querySelector('button.btn-success');
+            const skipButton = timerEl.querySelector('button.btn-warning');
+            const duration = parseInt(startButton.getAttribute('data-duration'), 10);
+            startButton.onclick = function () {
+                playFromHere(exerciseId);
+            };
+            skipButton.onclick = function () {
+                skipTimer(exerciseId);
+            };
+        });
+    });
+    /*]]>*/
+</script>
+</body>
+</html>

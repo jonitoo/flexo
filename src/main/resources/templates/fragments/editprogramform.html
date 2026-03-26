@@ -1,0 +1,19 @@
+<!-- Edit Program Form Fragment -->
+<div th:fragment="editprogramform">
+    <form hx-post="/programs/edit"
+          hx-target="body"
+          hx-swap="none"
+          hx-on="htmx:afterRequest: window.location.reload()"
+          class="d-flex flex-column">
+        <input type="hidden" name="id" th:value="${program.id}" />
+        <div class="mb-3">
+            <label for="edit-program-name" class="form-label">Name</label>
+            <input type="text" class="form-control" id="edit-program-name" name="name" th:value="${program.name}" required />
+        </div>
+        <div class="mb-3">
+            <label for="edit-program-description" class="form-label">Description</label>
+            <textarea class="form-control" id="edit-program-description" name="description" rows="15" th:text="${program.description}"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary" data-bs-dismiss="modal">Save</button>
+    </form>
+</div>

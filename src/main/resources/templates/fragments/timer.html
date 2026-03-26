@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="timer(exerciseId, duration)" class="timer-container" th:id="'timer-container-' + ${exerciseId}" style="width: 200px;">
+    <div class="d-flex align-items-center gap-2">
+        <button class="btn btn-success" th:attr="data-duration=${duration}">Start</button>
+        <button class="btn btn-warning" th:attr="data-exercise-id=${exerciseId}" type="button">Skip</button>
+        <div th:id="'timer-display-' + ${exerciseId}" class="fs-5" th:text="${#numbers.formatInteger(duration / 60, 2)} + ':' + ${#numbers.formatInteger(duration % 60, 2)}">00:00</div>
+    </div>
+</div>
+</body>
+</html>

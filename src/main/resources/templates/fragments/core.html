@@ -1,0 +1,105 @@
+<!-- This is the row fragment, it get returned but the /add or /edit endpoints, and gets
+    appended or replaced on the table -->
+
+<!-- ------------------------------------------ -->
+<!-- This the entire table fragment, returned when /refersh is called -->
+<table
+        th:fragment="table"
+        class="table table-striped"
+        style="table-layout: fixed"
+>
+    <thead>
+    <td></td>
+    <td>Name</td>
+    <td>Description</td>
+    <td>Image</td>
+    <td>Action</td>
+    </thead>
+    <tr th:each="row : ${rows}">
+        <td th:text="${row.id}"></td>
+        <td th:text="${row.name}"></td>
+        <td th:utext="${row.description}"></td>
+        <td>
+            <img
+                    th:if="${row.image != null}"
+                    th:src="@{'/exercise/' + ${row.id} + '/image'}"
+                    alt="Exercise image"
+                    style="max-width: 200px; max-height: 140px; object-fit: cover; border-radius: 6px;"
+            />
+        </td>
+        <td>
+            <button
+                    class="btn btn-danger"
+                    th:hx-delete="'/delete?id=' + ${row.id}"
+                    th:hx-target="'#id_' + ${row.id}"
+            >
+                Delete
+            </button>
+            <button
+                    class="btn btn-secondary"
+                    data-bs-toggle="modal"
+                    data-bs-target="#uploadImageModal"
+                    th:hx-get="@{'/exercise/' + ${row.id} + '/image/upload-form'}"
+                    hx-target="#upload-image-dialog-body"
+                    hx-trigger="click"
+            >
+                Upload image
+            </button>
+            <button
+                    class="btn btn-primary"
+                    data-bs-toggle="modal"
+                    data-bs-target="#editModal"
+                    th:hx-get="'/edit-form?id=' + ${row.id} +'&name='+ ${row.name} +'&description='+ ${row.description}"
+                    hx-target="#edit-dialog-body"
+                    hx-trigger="click"
+            >
+                Edit
+            </button>
+        </td>
+    </tr>
+</table>
+
+<!-- This is the edit form, returned when request /edit-form, rendered in the modals -->
+<form
+        th:fragment="editform"
+        hx-post="/edit"
+        th:hx-target="'#id_' + ${id}"
+        hx-swap="outerHTML"
+        class="d-flex flex-column"
+>
+    <input type="hidden" name="id" th:value="${id}"/>
+    <input
+            type="text"
+            name="name"
+            placeholder="Name"
+            class="mb-2"
+            th:value="${name}"
+    />
+    <textarea
+            name="description"
+            placeholder="Description"
+            class="mb-2"
+            rows="15"
+            th:text="${description}"
+    ></textarea>
+    <div class="mb-2">
+        <label for="timerDurationSeconds" class="form-label">Timer (seconds)</label>
+        <input type="number" id="timerDurationSeconds" name="timerDurationSeconds" class="form-control" th:value="${timerDurationSeconds}" />
+    </div>
+    <button type="submit" class="btn btn-sm btn-primary" data-bs-dismiss="modal">
+        Save
+    </button>
+</form>
+
+<!-- The upload image form, returned when /exercise/{id}/image/upload-form is called -->
+<form
+        th:fragment="uploadimageform"
+        th:hx-post="@{'/exercise/' + ${id} + '/image'}"
+        th:hx-target="'#id_' + ${id}"
+        hx-swap="outerHTML"
+        enctype="multipart/form-data"
+        class="d-flex flex-column gap-2"
+>
+    <input type="file" name="image" accept="image/*" class="form-control"/>
+    <button type="submit" class="btn btn-primary" data-bs-dismiss="modal">Upload</button>
+</form>

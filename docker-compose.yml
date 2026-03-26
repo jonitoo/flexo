@@ -1,0 +1,15 @@
+services:
+
+  mongodb:
+    image: 'mongodb/mongodb-community-server:6.0.12-ubi8'
+    restart: always
+    volumes:
+      - '../init:/docker-entrypoint-initb.d'
+    ports:
+      - "17017:27017"
+    networks:
+      - flexo_network
+
+networks:
+  flexo_network:
+    driver: bridge

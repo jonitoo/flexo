@@ -1,0 +1,29 @@
+<!-- The fragment rendered when edit program button is clicked -->
+<div
+  th:fragment="editprogrammodal"
+  class="modal fade"
+  id="editProgramModal"
+  tabindex="-1"
+  role="dialog"
+  aria-labelledby="editProgramModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editProgramModalLabel">Edit Program</h5>
+        <button
+          type="button"
+          class="close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <!-- The form here will be injected by HTMX dynamically -->
+      <div class="modal-body" id="edit-program-dialog-body">...</div>
+    </div>
+  </div>
+</div>
+
