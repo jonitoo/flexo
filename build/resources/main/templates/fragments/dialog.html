@@ -1,0 +1,185 @@
+<!-- The fragment rendered when edit button is clicked -->
+<div
+  th:fragment="editmodal"
+  class="modal fade"
+  id="editModal"
+  tabindex="-1"
+  role="dialog"
+  aria-labelledby="editModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editModalLabel">Edit</h5>
+        <button
+          type="button"
+          class="close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <!-- The form here will be injected by HTMX dynamically -->
+      <div class="modal-body" id="edit-dialog-body">...</div>
+    </div>
+  </div>
+</div>
+
+<!-- The fragment rendered when clicking the add button -->
+<div
+  th:fragment="createmodal"
+  class="modal fade"
+  id="createModal"
+  tabindex="-1"
+  role="dialog"
+  aria-labelledby="createModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="createModalLabel">Add New</h5>
+        <button
+          type="button"
+          class="close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <!-- On submit HTMX will send POST request to /add endpoint, and in this case appends the return html
+            at the end of the table, because we specifed beforeend -->
+        <form
+          hx-post="/add"
+          hx-target="#main_table"
+          hx-swap="beforeend"
+          class="d-flex flex-column"
+        >
+          <input type="text" name="name" placeholder="Name" class="mb-2" />
+          <textarea name="description" placeholder="Description" rows="15" class="form-control mb-2"></textarea>
+          <div class="mb-2">
+            <label for="timerDurationSeconds" class="form-label">Timer (seconds)</label>
+            <input type="number" id="timerDurationSeconds" name="timerDurationSeconds" class="form-control" value="60" />
+          </div>
+          <button
+            type="submit"
+            class="btn btn-sm btn-primary"
+            data-bs-dismiss="modal"
+          >
+            Add
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- The fragment rendered when upload button is clicked -->
+<div
+  th:fragment="uploadimagemodal"
+  class="modal fade"
+  id="uploadImageModal"
+  tabindex="-1"
+  role="dialog"
+  aria-labelledby="uploadImageModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="uploadImageModalLabel">Upload image</h5>
+        <button
+          type="button"
+          class="close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <!-- The form here will be injected by HTMX dynamically -->
+      <div class="modal-body" id="upload-image-dialog-body">...</div>
+    </div>
+  </div>
+</div>
+
+<!-- Import Modal -->
+<div
+        th:fragment="importmodal"
+        class="modal fade"
+        id="importModal"
+        tabindex="-1"
+        role="dialog"
+        aria-labelledby="importModalLabel"
+        aria-hidden="true"
+>
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="importModalLabel">Import Exercises</h5>
+        <button
+                type="button"
+                class="close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form action="/admin/import" method="post" enctype="multipart/form-data">
+          <div class="mb-3">
+            <label for="file" class="form-label">Select JSON file</label>
+            <input class="form-control" type="file" id="file" name="file" accept=".json">
+          </div>
+          <input type="hidden" name="selectedProgramId" th:value="${selectedProgramId}" />
+          <button type="submit" class="btn btn-primary">Import</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Create Program Modal -->
+<div
+        th:fragment="createprogrammodal"
+        class="modal fade"
+        id="createProgramModal"
+        tabindex="-1"
+        role="dialog"
+        aria-labelledby="createProgramModalLabel"
+        aria-hidden="true"
+>
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="createProgramModalLabel">Create Program</h5>
+        <button
+                type="button"
+                class="close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form action="/programs/add" method="post">
+          <div class="mb-3">
+            <label for="name" class="form-label">Name</label>
+            <input type="text" class="form-control" id="name" name="name" required>
+          </div>
+          <div class="mb-3">
+            <label for="description" class="form-label">Description</label>
+            <textarea class="form-control" id="description" name="description" rows="15"></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary">Create</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
