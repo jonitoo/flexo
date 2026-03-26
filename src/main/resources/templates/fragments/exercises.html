@@ -16,12 +16,11 @@
                 th:if="${exercise.image != null}"
                 th:src="@{'/exercise/' + ${exercise.id} + '/image'}"
                 alt="Exercise image"
-                class="img-fluid rounded"
-                style="max-height: 140px; object-fit: cover;"
+                style="max-width: 200px; max-height: 140px; object-fit: cover; border-radius: 6px;"
         />
     </td>
     <td>
-        <div class="d-flex flex-column flex-lg-row gap-2">
+        <div class="d-flex flex-column gap-2">
             <button
                     class="btn btn-danger"
                     th:hx-delete="'/delete?id=' + ${exercise.id}"
